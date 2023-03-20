@@ -7,7 +7,7 @@ canvas.height = 512;
 
 //ctx.drawImage(img, 0, 0);
 
-let puntos = 1;
+let puntos = 10;
 let ParticlesS = []; // arreglo de partículas
 
 circleRadius = 10; // radio del círculo, solo para despliegue
@@ -141,8 +141,8 @@ class Particles {
   }
 
   initAnimation() {
-    //ctx.drawImage(img, 0, 0);
-    dibujarTablero(tablero);
+    ctx.drawImage(canvasImage, 0, 0);
+    //dibujarFigura(valores, size);
     for (let i = 0; i < this.puntos; i++) {
       this.particles[i].display();
     }
@@ -169,61 +169,65 @@ const mostrar = async () => {
     ParticlesAlgorithms.initAnimation();
   }
 };
-function generarDominio(limites, step) {
+function generarDominio(limites, cantidadPixeles) {
+  let diferencia =
+    (Math.abs(limites[0]) + Math.abs(limites[1])) / cantidadPixeles;
   let dominio = [];
-  let dominios = [];
-  for (let i = limites[0] + step; i < limites[1]; i += step) {
-    for (let k = limites[0] + step; k < limites[1]; k += step) {
-      dominio.push(k);
-    }
-    dominios.push(dominio);
-    dominio = [];
-  }
+  for (let i = limites[0] + diferencia; i <= limites[1]; i += diferencia)
+    dominio.push(i);
 
-  console.log(dominios);
-  return dominios;
+  console.log(dominio);
+  return dominio;
+}
+
+function rastringin(vector) {
+  let ac = 0,
+    n = 2;
+  for (let i = 1; i <= n; i++) {
+    ac += vector[i - 1] ** 2 - 10 * Math.cos(2 * Math.PI * vector[i - 1]);
+  }
+  return 10 * n + ac;
 }
 
 function generarFuncion(dominio) {
-  let tablero = [];
+  let valor;
+  let size = canvas.width / dominio.length;
   let figura = [];
-  let n = 2;
-  let ac = 0;
-  for (let j = 0; j < dominio.length; j++) {
-    for (let k = 0; k < dominio[j].length; k++) {
-      for (let i = 1; i <= n; i++) {
-        ac += dominio[j][k] ** 2 - 10 * Math.cos(2 * Math.PI * dominio[j][k]);
-      }
-      figura.push(10 * n + ac);
-      ac = 0;
+  let valores = [];
+  for (let i = 0; i < dominio.length; i++) {
+    for (let j = 0; j < dominio.length; j++) {
+      valor = rastringin([dominio[i], dominio[j]]);
+      figura.push(valor);
     }
-
-    tablero.push(figura);
+    valores.push(figura);
     figura = [];
   }
-  console.log(tablero);
-  return tablero;
+  return [valores, size];
 }
 
-function dibujarTablero(tablero) {
-  size = canvas.width / tablero.length;
-
-  for (let i = 0; i < tablero.length; i++) {
-    for (let j = 0; j < tablero[i].length; j++) {
+function dibujarFigura(valores, size) {
+  for (let i = 0; i < valores.length; i++) {
+    for (let j = 0; j < valores[i].length; j++) {
       ctx.beginPath();
-      ctx.fillStyle = `rgb(${tablero[i][j]},${100},${220})`;
+      ctx.fillStyle = `rgb(${valores[i][j] + 10},${valores[i][j]},${
+        valores[i][j]
+      })`;
       ctx.fillRect(i * size, j * size, size, size);
       ctx.fill();
     }
   }
+  let imageX = new Image();
+  imageX.src = canvas.toDataURL();
+  return imageX;
 }
 
 let limites = [-7, 7];
-let step = 0.5;
-let dominio = generarDominio(limites, step);
-
-let tablero = generarFuncion(dominio);
-dibujarTablero(tablero);
+let cantidadPixeles = 1000;
+let dominio = generarDominio(limites, cantidadPixeles);
+let [valores, size] = generarFuncion(dominio);
+let canvasImage = dibujarFigura(valores, size);
+console.log(canvasImage);
+//dibujarTablero(tablero);
 
 let ParticlesAlgorithms = new Particles(puntos, canvas, ctx, circleRadius);
 ParticlesAlgorithms.createParticles();
