@@ -11,9 +11,9 @@ let puntos = 10;
 let ParticlesS = []; // arreglo de partículas
 
 circleRadius = 10; // radio del círculo, solo para despliegue
-let gbestx = 255,
-  gbesty = 255,
-  gbest = 255; // posición y fitness del mejor global
+let gbestx = 2500,
+  gbesty = 2500,
+  gbest = 2500; // posición y fitness del mejor global
 
 let w = 5000; // inercia: baja (~50): explotación, alta (~5000): exploración (2000 ok)
 let C1 = 30;
@@ -26,26 +26,29 @@ class Particle {
   constructor(canvas) {
     this.canvas = canvas;
     this.lineWidth = 1;
-    this.x = Math.random() * this.canvas.width;
-    this.y = Math.random() * this.canvas.height;
+    this.x = Math.floor(Math.random() * this.canvas.width);
+    this.y = Math.floor(Math.random() * this.canvas.height);
     this.vx = Math.random() * (1 + 1) - 1;
     this.vy = Math.random() * (1 + 1) - 1;
-    this.pfit = 255;
-    this.fit = 255;
+    this.pfit = 2500;
+    this.fit = 2500;
   }
 
   eval() {
     //recibe imagen que define función de fitness
     evals++;
     //color c=surf.get(int(x),int(y)); // obtiene color de la imagen en posición (x,y)
-    let color = ctx.getImageData(this.x, this.y, 1, 1).data;
 
-    this.fit = color[0]; // rojo
-    this.green = color[1]; // rojo
-    this.blue = color[2]; // rojo
+    if (this.x < 0) this.x = 0;
+    if (this.y < 0) this.y = 0;
+    if (this.x > this.canvas.width) this.x = this.canvas.width - 1;
+    if (this.y > this.canvas.height) this.y = this.canvas.height - 1;
+
+    this.fit = valores[Math.floor(this.x)][Math.floor(this.y)];
 
     if (this.fit < this.pfit) {
       // actualiza local best si es mejor
+
       this.pfit = this.fit;
       this.px = this.x;
       this.py = this.y;
@@ -53,11 +56,11 @@ class Particle {
 
     if (this.fit < gbest) {
       // actualiza global best
+
       gbest = this.fit;
       gbestx = this.x;
       gbesty = this.y;
       evals_to_best = evals;
-      console.log(color);
     }
     //return fit; //retorna la componente roja
   }
@@ -156,9 +159,13 @@ class Particles {
 
 const delayFunction = (ms) => {
   return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      resolve();
-    }, ms);
+    try {
+      setTimeout(() => {
+        resolve();
+      }, ms);
+    } catch (err) {
+      console.log(err);
+    }
   });
 };
 
@@ -209,9 +216,7 @@ function dibujarFigura(valores, size) {
   for (let i = 0; i < valores.length; i++) {
     for (let j = 0; j < valores[i].length; j++) {
       ctx.beginPath();
-      ctx.fillStyle = `rgb(${valores[i][j] + 10},${valores[i][j]},${
-        valores[i][j]
-      })`;
+      ctx.fillStyle = `hsl(${valores[i][j] + 130}, 100%, 30%)`;
       ctx.fillRect(i * size, j * size, size, size);
       ctx.fill();
     }
@@ -221,12 +226,11 @@ function dibujarFigura(valores, size) {
   return imageX;
 }
 
-let limites = [-7, 7];
-let cantidadPixeles = 1000;
+let limites = [-3, 7];
+let cantidadPixeles = 512;
 let dominio = generarDominio(limites, cantidadPixeles);
 let [valores, size] = generarFuncion(dominio);
 let canvasImage = dibujarFigura(valores, size);
-console.log(canvasImage);
 //dibujarTablero(tablero);
 
 let ParticlesAlgorithms = new Particles(puntos, canvas, ctx, circleRadius);
