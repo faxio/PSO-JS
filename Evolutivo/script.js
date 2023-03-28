@@ -133,6 +133,7 @@ class Particles {
     this.despliegaBest();
     this.seleccion();
     this.cruzamiento();
+
     for (let i = 0; i < this.puntos; i++) {
       this.particles[i].eval();
     }
@@ -153,6 +154,7 @@ class Particles {
     if (largo % 2 != 0) {
       this.seleccionados.push(this.particles[this.particles.length - 1]);
     }
+    this.seleccionados = [...this.seleccionados, ...this.seleccionados];
   }
 
   cruzamiento() {
@@ -168,8 +170,7 @@ class Particles {
       } else {
         this.cruzamientos.push(this.seleccionados[i]);
       }
-      console.log(seleccionado_reproduccion, seleccionado_reproduccion.length);
-      /*
+
       if (seleccionado_reproduccion.length == 2) {
         for (let j = 0; j < 2; j++) {
           let particle = new Particle(this.canvas);
@@ -187,13 +188,14 @@ class Particles {
         }
         seleccionado_reproduccion = [];
       }
-      */
     }
 
     if (seleccionado_reproduccion.length == 1) {
       this.cruzamientos.push(seleccionado_reproduccion[0]);
     }
-    console.log(this.cruzamientos.length, seleccionado_reproduccion.length);
+    this.seleccionados = this.cruzamientos;
+    this.particles = this.seleccionados;
+    console.log(this.particles);
   }
 }
 
@@ -211,7 +213,7 @@ const delayFunction = (ms) => {
 
 const mostrar = async () => {
   while (true) {
-    await delayFunction(10000);
+    await delayFunction(100);
     //ctx.clearRect(0, 0, canvas.width, canvas.height);
     ParticlesAlgorithms.initAnimation();
   }
