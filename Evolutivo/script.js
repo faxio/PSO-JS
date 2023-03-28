@@ -87,6 +87,10 @@ class Particles {
     this.particles = [];
     this.seleccionados = [];
     this.cruzamientos = [];
+    this.probabilidad =
+      Math.random() *
+        (mayorProbabilidadCruzamiento - menorProbabilidadCruzamiento) +
+      menorProbabilidadCruzamiento;
     this.puntos = puntos;
     this.canvas = canvas;
   }
@@ -127,30 +131,70 @@ class Particles {
       this.particles[i].display();
     }
     this.despliegaBest();
+    this.seleccion();
+    this.cruzamiento();
     for (let i = 0; i < this.puntos; i++) {
       this.particles[i].eval();
     }
   }
 
   seleccion() {
-    largo = Math.floor(this.particles.length / 2);
+    this.seleccionados = [];
+    let largo = Math.floor(this.particles.length / 2);
 
     for (let i = 0; i < largo; i++) {
       if (this.particles[2 * i].fit > this.particles[2 * i + 1]) {
-        this.particles.seleccionados.push(this.particles[2 * i]);
+        this.seleccionados.push(this.particles[2 * i]);
       } else {
-        this.particles.seleccionados.push(this.particles[2 * i + 1]);
+        this.seleccionados.push(this.particles[2 * i + 1]);
       }
     }
 
-    if (this.particles.length % 2 != 0) {
-      this.particles.seleccionados.push(
-        this.particles[this.particles.length - 1]
-      );
+    if (largo % 2 != 0) {
+      this.seleccionados.push(this.particles[this.particles.length - 1]);
     }
   }
 
-  cruzamiento() {}
+  cruzamiento() {
+    this.cruzamientos = [];
+    let seleccionado_reproduccion = [];
+
+    let largo = Math.floor(this.seleccionados.length);
+
+    for (let i = 0; i < largo; i++) {
+      //console.log(this.seleccionados[i].probabilidad, this.probabilidad);
+      if (this.seleccionados[i].probabilidad > this.probabilidad) {
+        seleccionado_reproduccion.push(this.seleccionados[i]);
+      } else {
+        this.cruzamientos.push(this.seleccionados[i]);
+      }
+      console.log(seleccionado_reproduccion, seleccionado_reproduccion.length);
+      /*
+      if (seleccionado_reproduccion.length == 2) {
+        for (let j = 0; j < 2; j++) {
+          let particle = new Particle(this.canvas);
+          let fatherParticleX = seleccionado_reproduccion[0].x;
+          let fatherParticleY = seleccionado_reproduccion[0].y;
+          let motherParticleX = seleccionado_reproduccion[1].x;
+          let motherParticleY = seleccionado_reproduccion[1].y;
+          particle.x =
+            Math.random() * (fatherParticleX - motherParticleX) +
+            motherParticleX;
+          particle.y =
+            Math.random() * (fatherParticleY - motherParticleY) +
+            motherParticleY;
+          this.cruzamientos.push(particle);
+        }
+        seleccionado_reproduccion = [];
+      }
+      */
+    }
+
+    if (seleccionado_reproduccion.length == 1) {
+      this.cruzamientos.push(seleccionado_reproduccion[0]);
+    }
+    console.log(this.cruzamientos.length, seleccionado_reproduccion.length);
+  }
 }
 
 const delayFunction = (ms) => {
@@ -167,11 +211,12 @@ const delayFunction = (ms) => {
 
 const mostrar = async () => {
   while (true) {
-    await delayFunction(10);
+    await delayFunction(10000);
     //ctx.clearRect(0, 0, canvas.width, canvas.height);
     ParticlesAlgorithms.initAnimation();
   }
 };
+
 function generarDominio(limites, cantidadPixeles) {
   let diferencia =
     (Math.abs(limites[0]) + Math.abs(limites[1])) / cantidadPixeles;
