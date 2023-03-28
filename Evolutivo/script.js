@@ -154,7 +154,6 @@ class Particles {
     if (largo % 2 != 0) {
       this.seleccionados.push(this.particles[this.particles.length - 1]);
     }
-    this.seleccionados = [...this.seleccionados, ...this.seleccionados];
   }
 
   cruzamiento() {
@@ -163,12 +162,17 @@ class Particles {
 
     let largo = Math.floor(this.seleccionados.length);
 
-    for (let i = 0; i < largo; i++) {
-      //console.log(this.seleccionados[i].probabilidad, this.probabilidad);
-      if (this.seleccionados[i].probabilidad > this.probabilidad) {
-        seleccionado_reproduccion.push(this.seleccionados[i]);
+    let sizeHijos = this.particles.length;
+    console.log(sizeHijos);
+    let largoCruzamiento = this.cruzamientos.length;
+    while (largoCruzamiento < sizeHijos) {
+      let seleccion = Math.floor(Math.random() * largo);
+
+      if (this.seleccionados[seleccion].probabilidad > this.probabilidad) {
+        seleccionado_reproduccion.push(this.seleccionados[seleccion]);
       } else {
-        this.cruzamientos.push(this.seleccionados[i]);
+        this.cruzamientos.push(this.seleccionados[seleccion]);
+        largoCruzamiento++;
       }
 
       if (seleccionado_reproduccion.length == 2) {
@@ -185,14 +189,17 @@ class Particles {
             Math.random() * (fatherParticleY - motherParticleY) +
             motherParticleY;
           this.cruzamientos.push(particle);
+          largoCruzamiento++;
         }
         seleccionado_reproduccion = [];
       }
+      if (seleccionado_reproduccion.length == 1) {
+        this.cruzamientos.push(seleccionado_reproduccion[0]);
+        largoCruzamiento++;
+      }
+      console.log(this.cruzamientos);
     }
 
-    if (seleccionado_reproduccion.length == 1) {
-      this.cruzamientos.push(seleccionado_reproduccion[0]);
-    }
     this.seleccionados = this.cruzamientos;
     this.particles = this.seleccionados;
     console.log(this.particles);
@@ -213,7 +220,7 @@ const delayFunction = (ms) => {
 
 const mostrar = async () => {
   while (true) {
-    await delayFunction(100);
+    await delayFunction(1000);
     //ctx.clearRect(0, 0, canvas.width, canvas.height);
     ParticlesAlgorithms.initAnimation();
   }
