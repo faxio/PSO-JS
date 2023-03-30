@@ -5,7 +5,53 @@ const informacion = document.querySelector(".informacion");
 canvas.width = 512;
 canvas.height = 512;
 
-//ctx.drawImage(img, 0, 0);
+// Datos para gráficas
+let historialBest = [5000, 1500, 8000, 5102];
+let historialFitnes = [10000, 1700, 5000, 5989];
+
+// Referencia para gráficas
+const grafica = document.querySelector("#grafica").getContext("2d");
+
+let datosVentas2020 = {
+  label: "Historial bests",
+  data: historialBest, // La data es un arreglo que debe tener la misma cantidad de valores que la cantidad de etiquetas
+  backgroundColor: "rgba(54, 162, 235, 0.2)", // Color de fondo
+  borderColor: "rgba(54, 162, 235, 1)", // Color del borde
+  borderWidth: 1, // Ancho del borde
+};
+
+let datosVentas2021 = {
+  label: "Historial fit",
+  data: historialFitnes, // La data es un arreglo que debe tener la misma cantidad de valores que la cantidad de etiquetas
+  backgroundColor: "rgba(255, 159, 64, 0.2)", // Color de fondo
+  borderColor: "rgba(255, 159, 64, 1)", // Color del borde
+  borderWidth: 1, // Ancho del borde
+};
+
+function graficar() {
+  new Chart(grafica, {
+    type: "line", // Tipo de gráfica)
+    data: {
+      datasets: [
+        datosVentas2020,
+        datosVentas2021,
+        // Aquí más datos...
+      ],
+    },
+    options: {
+      animation: false,
+      scales: {
+        yAxes: [
+          {
+            ticks: {
+              beginAtZero: true,
+            },
+          },
+        ],
+      },
+    },
+  });
+}
 
 let puntos = 10;
 let ParticlesS = []; // arreglo de partículas
@@ -38,6 +84,12 @@ class Particle {
     //recibe imagen que define función de fitness
     evals++;
     //color c=surf.get(int(x),int(y)); // obtiene color de la imagen en posición (x,y)
+    historialBest.push(evals);
+    historialFitnes.push(this.fit);
+
+    //graficaBest.data.datasets[0] = historialBest;
+    //graficaBest.data.datasets[1] = historialFitnes;
+    //graficaBest.update();
 
     if (this.x < 0) this.x = 0;
     if (this.y < 0) this.y = 0;
@@ -61,6 +113,9 @@ class Particle {
       gbestx = this.x;
       gbesty = this.y;
       evals_to_best = evals;
+    }
+    if (evals > 30000) {
+      graficar();
     }
     //return fit; //retorna la componente roja
   }
@@ -170,8 +225,8 @@ const delayFunction = (ms) => {
 };
 
 const mostrar = async () => {
-  while (true) {
-    await delayFunction(10);
+  while (gbest < 30000) {
+    await delayFunction(1);
     //ctx.clearRect(0, 0, canvas.width, canvas.height);
     ParticlesAlgorithms.initAnimation();
   }
@@ -239,17 +294,34 @@ ParticlesAlgorithms.initAnimation();
 
 mostrar();
 
-//requestAnimationFrame(animate);
-
 /*
-void draw(){
 
-  despliegaBest();
-  //mueve puntos
-  for(int i = 0;i<puntos;i++){
-    fl[i].move();
-    fl[i].Eval(surf);
-  }
-  
+function graficar(){
+  let graficaBest = new Chart(grafica, {
+    type: "line", // Tipo de gráfica)
+    data: {
+      datasets: [
+        datosVentas2020,
+        datosVentas2021,
+        // Aquí más datos...
+      ],
+    },
+    options: {
+      scales: {
+        yAxes: [
+          {
+            ticks: {
+              beginAtZero: true,
+            },
+          },
+        ],
+      },
+    },
+  });
 }
+
+function remover(grafica) {
+  grafica.destroy()
+}
+
 */

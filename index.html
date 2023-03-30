@@ -6,15 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <link rel="stylesheet" href="./index.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@latest/dist/Chart.min.js"></script>
   </head>
   <body>
+    <div class="informacion"></div>
     <canvas id="canvas1"></canvas>
     <img
       id="patterImage"
       style="display: none"
       src="./Moon_LRO_LOLA_global_LDEM_1024_b.jpg"
     />
-    <div class="informacion"></div>
+
+    <div style="width: 800px">
+      <canvas id="grafica"></canvas>
+    </div>
+
     <script src="script.js"></script>
   </body>
 </html>
