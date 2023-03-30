@@ -6,8 +6,9 @@ canvas.width = 512;
 canvas.height = 512;
 
 //ctx.drawImage(img, 0, 0);
-
-let puntos = 20;
+let mutacion = 0.1;
+let formulaMutacion = Math.random() * (mutacion + mutacion) - mutacion;
+let puntos = 80;
 let ParticlesS = []; // arreglo de partículas
 
 circleRadius = 10; // radio del círculo, solo para despliegue
@@ -143,7 +144,7 @@ class Particles {
     this.seleccionados = [];
     let largo = Math.floor(this.particles.length / 2);
 
-    for (let i = 0; i < largo; i++) {
+    for (let i = 0; i < largo - 10; i++) {
       if (this.particles[2 * i].fit > this.particles[2 * i + 1]) {
         this.seleccionados.push(this.particles[2 * i]);
       } else {
@@ -151,7 +152,11 @@ class Particles {
       }
     }
 
-    if (largo % 2 != 0) {
+    for (let i = 0; i < 10; i++) {
+      this.seleccionados.push(new Particle(canvas));
+    }
+
+    if (largo < this.seleccionados.length) {
       this.seleccionados.push(this.particles[this.particles.length - 1]);
     }
   }
@@ -163,7 +168,6 @@ class Particles {
     let largo = Math.floor(this.seleccionados.length);
 
     let sizeHijos = this.particles.length;
-    console.log(sizeHijos);
     let largoCruzamiento = this.cruzamientos.length;
     while (largoCruzamiento < sizeHijos) {
       let seleccion = Math.floor(Math.random() * largo);
@@ -184,10 +188,12 @@ class Particles {
           let motherParticleY = seleccionado_reproduccion[1].y;
           particle.x =
             Math.random() * (fatherParticleX - motherParticleX) +
-            motherParticleX;
+            motherParticleX +
+            formulaMutacion;
           particle.y =
             Math.random() * (fatherParticleY - motherParticleY) +
-            motherParticleY;
+            motherParticleY +
+            formulaMutacion;
           this.cruzamientos.push(particle);
           largoCruzamiento++;
         }
@@ -197,12 +203,10 @@ class Particles {
         this.cruzamientos.push(seleccionado_reproduccion[0]);
         largoCruzamiento++;
       }
-      console.log(this.cruzamientos);
     }
 
     this.seleccionados = this.cruzamientos;
     this.particles = this.seleccionados;
-    console.log(this.particles);
   }
 }
 
