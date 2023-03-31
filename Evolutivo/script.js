@@ -8,7 +8,7 @@ canvas.height = 512;
 //ctx.drawImage(img, 0, 0);
 let mutacion = 0.1;
 let formulaMutacion = Math.random() * (mutacion + mutacion) - mutacion;
-let puntos = 80;
+let puntos = 200;
 let ParticlesS = []; // arreglo de partículas
 
 circleRadius = 10; // radio del círculo, solo para despliegue
@@ -33,6 +33,7 @@ class Particle {
     this.y = Math.floor(Math.random() * this.canvas.height);
     this.pfit = 2500;
     this.fit = 2500;
+    this.probabilidadMutacion = Math.random();
     this.probabilidad =
       Math.random() *
         (mayorProbabilidadCruzamiento - menorProbabilidadCruzamiento) +
@@ -103,6 +104,7 @@ class Particles {
   }
 
   despliegaBest() {
+    /*
     ctx.beginPath();
     ctx.lineWidth = 3;
     ctx.arc(gbestx, gbesty, circleRadius, 0, 2 * Math.PI);
@@ -111,6 +113,7 @@ class Particles {
     ctx.fill();
     ctx.stroke();
 
+    */
     const title = document.createElement("h2");
     title.innerText = "best fitness: " + gbest;
     const evalToBest = document.createElement("h2");
@@ -134,6 +137,7 @@ class Particles {
     this.despliegaBest();
     this.seleccion();
     this.cruzamiento();
+    this.mutacion();
 
     for (let i = 0; i < this.puntos; i++) {
       this.particles[i].eval();
@@ -185,12 +189,10 @@ class Particles {
           let motherParticleY = seleccionado_reproduccion[1].y;
           particle.x =
             Math.random() * (fatherParticleX - motherParticleX) +
-            motherParticleX +
-            formulaMutacion;
+            motherParticleX;
           particle.y =
             Math.random() * (fatherParticleY - motherParticleY) +
-            motherParticleY +
-            formulaMutacion;
+            motherParticleY;
           this.cruzamientos.push(particle);
           largoCruzamiento++;
         }
@@ -201,8 +203,19 @@ class Particles {
         largoCruzamiento++;
       }
     }
+  }
 
-    this.seleccionados = this.cruzamientos;
+  mutacion() {
+    let largo = this.cruzamientos.length;
+    let probabilidadMutacion = 0.2;
+    this.seleccionados = [];
+    for (let i = 0; i < largo; i++) {
+      if (this.cruzamientos[i].probabilidadMutacion < probabilidadMutacion) {
+        this.seleccionados.push(new Particle(canvas));
+      } else {
+        this.seleccionados.push(this.cruzamientos[i]);
+      }
+    }
     this.particles = this.seleccionados;
   }
 }
