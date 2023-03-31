@@ -6,64 +6,27 @@ canvas.width = 512;
 canvas.height = 512;
 
 // Datos para gráficas
-let historialBest = [5000, 1500, 8000, 5102];
-let historialFitnes = [10000, 1700, 5000, 5989];
+
+let maxGenGraph = 30000;
+let historialBest = [];
+let historialFitnes = [];
+let iteraciones = [];
 
 // Referencia para gráficas
 const grafica = document.querySelector("#grafica").getContext("2d");
 
-let datosVentas2020 = {
-  label: "Historial bests",
-  data: historialBest, // La data es un arreglo que debe tener la misma cantidad de valores que la cantidad de etiquetas
-  backgroundColor: "rgba(54, 162, 235, 0.2)", // Color de fondo
-  borderColor: "rgba(54, 162, 235, 1)", // Color del borde
-  borderWidth: 1, // Ancho del borde
-};
-
-let datosVentas2021 = {
-  label: "Historial fit",
-  data: historialFitnes, // La data es un arreglo que debe tener la misma cantidad de valores que la cantidad de etiquetas
-  backgroundColor: "rgba(255, 159, 64, 0.2)", // Color de fondo
-  borderColor: "rgba(255, 159, 64, 1)", // Color del borde
-  borderWidth: 1, // Ancho del borde
-};
-
-function graficar() {
-  new Chart(grafica, {
-    type: "line", // Tipo de gráfica)
-    data: {
-      datasets: [
-        datosVentas2020,
-        datosVentas2021,
-        // Aquí más datos...
-      ],
-    },
-    options: {
-      animation: false,
-      scales: {
-        yAxes: [
-          {
-            ticks: {
-              beginAtZero: true,
-            },
-          },
-        ],
-      },
-    },
-  });
-}
-
-let puntos = 10;
+let puntos = 100;
 let ParticlesS = []; // arreglo de partículas
 
 circleRadius = 10; // radio del círculo, solo para despliegue
 let gbestx = 2500,
   gbesty = 2500,
-  gbest = 2500; // posición y fitness del mejor global
+  gbest = 2500, // posición y fitness del mejor global
+  promedio = 1000;
 
-let w = 5000; // inercia: baja (~50): explotación, alta (~5000): exploración (2000 ok)
-let C1 = 30;
-let C2 = 10; // learning factors (C1: own, C2: social) (ok)
+let w = 2000; // inercia: baja (~50): explotación, alta (~5000): exploración (2000 ok)
+let C1 = 0.2;
+let C2 = 0.1; // learning factors (C1: own, C2: social) (ok)
 let evals = 0;
 let evals_to_best = 0; //número de evaluaciones, sólo para despliegue
 let maxv = 3; // max velocidad (modulo)
@@ -76,16 +39,14 @@ class Particle {
     this.y = Math.floor(Math.random() * this.canvas.height);
     this.vx = Math.random() * (1 + 1) - 1;
     this.vy = Math.random() * (1 + 1) - 1;
-    this.pfit = 2500;
-    this.fit = 2500;
+    this.pfit = 200;
+    this.fit = 200;
   }
 
   eval() {
     //recibe imagen que define función de fitness
     evals++;
     //color c=surf.get(int(x),int(y)); // obtiene color de la imagen en posición (x,y)
-    historialBest.push(evals);
-    historialFitnes.push(this.fit);
 
     //graficaBest.data.datasets[0] = historialBest;
     //graficaBest.data.datasets[1] = historialFitnes;
@@ -113,14 +74,24 @@ class Particle {
       gbestx = this.x;
       gbesty = this.y;
       evals_to_best = evals;
+      historialBest.push(promedio);
+      historialFitnes.push(this.fit);
+      iteraciones.push(historialBest.length - 1);
     }
-    if (evals > 30000) {
-      graficar();
-    }
+
     //return fit; //retorna la componente roja
   }
 
   move() {
+    this.vx =
+      this.vx +
+      Math.random() * C1 * (this.px - this.x) +
+      Math.random() * C2 * (gbestx - this.x);
+    this.vy =
+      this.vy +
+      Math.random() * C1 * (this.py - this.y) +
+      Math.random() * C2 * (gbesty - this.y);
+    /*
     this.vx =
       w * this.vx +
       Math.random() * (this.px - this.x) +
@@ -129,7 +100,7 @@ class Particle {
       w * this.vy +
       Math.random() * (this.py - this.y) +
       Math.random() * (gbesty - this.y);
-
+    */
     let modu = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
     if (modu > maxv) {
       this.vx = (this.vx / modu) * maxv;
@@ -196,6 +167,38 @@ class Particles {
     informacion.appendChild(title);
     informacion.appendChild(evalToBest);
     informacion.appendChild(evaluaciones);
+
+    for (let i = 0; i < this.particles.length; i++) {
+      promedio += this.particles[i].fit;
+    }
+    promedio = promedio / this.particles.length;
+    if (evals >= maxGenGraph) {
+      console.log(historialBest, historialFitnes);
+      const data = {
+        labels: iteraciones,
+        datasets: [
+          {
+            label: "Promedio de fit",
+            data: historialBest, // La data es un arreglo que debe tener la misma cantidad de valores que la cantidad de etiquetas
+            backgroundColor: "rgba(54, 162, 235, 0.2)", // Color de fondo
+            borderColor: "rgba(54, 162, 235, 1)", // Color del borde
+            borderWidth: 1, // Ancho del borde
+          },
+          {
+            label: "Best Value fit",
+            data: historialFitnes, // La data es un arreglo que debe tener la misma cantidad de valores que la cantidad de etiquetas
+            backgroundColor: "rgba(255, 159, 64, 0.2)", // Color de fondo
+            borderColor: "rgba(255, 159, 64, 1)", // Color del borde
+            borderWidth: 1, // Ancho del borde
+          },
+        ],
+      };
+
+      new Chart(grafica, {
+        type: "line", // Tipo de gráfica)
+        data: data,
+      });
+    }
   }
 
   initAnimation() {
@@ -225,10 +228,14 @@ const delayFunction = (ms) => {
 };
 
 const mostrar = async () => {
-  while (gbest < 30000) {
+  while (evals <= maxGenGraph) {
     await delayFunction(1);
     //ctx.clearRect(0, 0, canvas.width, canvas.height);
     ParticlesAlgorithms.initAnimation();
+  }
+  if (evals > maxGenGraph) {
+    ParticlesAlgorithms = [];
+    canvas.remove();
   }
 };
 function generarDominio(limites, cantidadPixeles) {
