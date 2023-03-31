@@ -142,22 +142,19 @@ class Particles {
 
   seleccion() {
     this.seleccionados = [];
-    let largo = Math.floor(this.particles.length / 2);
+    let largo = Math.floor(this.particles.length);
 
-    for (let i = 0; i < largo - 10; i++) {
-      if (this.particles[2 * i].fit > this.particles[2 * i + 1]) {
-        this.seleccionados.push(this.particles[2 * i]);
+    for (let i = 0; i < largo; i++) {
+      let probabilidadSeleccion1 = Math.floor(Math.random() * largo);
+      let probabilidadSeleccion2 = Math.floor(Math.random() * largo);
+      if (
+        this.particles[probabilidadSeleccion1].fit <
+        this.particles[probabilidadSeleccion2].fit
+      ) {
+        this.seleccionados.push(this.particles[probabilidadSeleccion1]);
       } else {
-        this.seleccionados.push(this.particles[2 * i + 1]);
+        this.seleccionados.push(this.particles[probabilidadSeleccion2]);
       }
-    }
-
-    for (let i = 0; i < 10; i++) {
-      this.seleccionados.push(new Particle(canvas));
-    }
-
-    if (largo < this.seleccionados.length) {
-      this.seleccionados.push(this.particles[this.particles.length - 1]);
     }
   }
 
