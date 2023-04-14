@@ -22,7 +22,7 @@ circleRadius = 10; // radio del círculo, solo para despliegue
 let gbestx = 2500,
   gbesty = 2500,
   gbest = 2500, // posición y fitness del mejor global
-  promedio = 1000;
+  promedio = 10;
 
 let w = 2000; // inercia: baja (~50): explotación, alta (~5000): exploración (2000 ok)
 let C1 = 0.2;
@@ -74,15 +74,13 @@ class Particle {
       gbestx = this.x;
       gbesty = this.y;
       evals_to_best = evals;
-      historialBest.push(promedio);
-      historialFitnes.push(this.fit);
-      iteraciones.push(historialBest.length - 1);
     }
 
     //return fit; //retorna la componente roja
   }
 
   move() {
+    /*
     this.vx =
       this.vx +
       Math.random() * C1 * (this.px - this.x) +
@@ -91,7 +89,7 @@ class Particle {
       this.vy +
       Math.random() * C1 * (this.py - this.y) +
       Math.random() * C2 * (gbesty - this.y);
-    /*
+    */
     this.vx =
       w * this.vx +
       Math.random() * (this.px - this.x) +
@@ -100,7 +98,6 @@ class Particle {
       w * this.vy +
       Math.random() * (this.py - this.y) +
       Math.random() * (gbesty - this.y);
-    */
     let modu = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
     if (modu > maxv) {
       this.vx = (this.vx / modu) * maxv;
@@ -131,6 +128,7 @@ class Particles {
     this.particles = [];
     this.puntos = puntos;
     this.canvas = canvas;
+    this.particlesAllFits = 0;
   }
   createParticles() {
     for (let i = 0; i < puntos; i++) {
@@ -172,6 +170,25 @@ class Particles {
       promedio += this.particles[i].fit;
     }
     promedio = promedio / this.particles.length;
+  }
+
+  initAnimation() {
+    ctx.drawImage(canvasImage, 0, 0);
+    //dibujarFigura(valores, size);
+    for (let i = 0; i < this.puntos; i++) {
+      this.particles[i].display();
+    }
+    this.despliegaBest();
+    for (let i = 0; i < this.puntos; i++) {
+      this.particles[i].eval();
+      this.particles[i].move();
+      this.particlesAllFits += this.particles[i].fit;
+    }
+    historialBest.push(this.particlesAllFits / this.particles.length);
+    this.particlesAllFits = 0;
+    historialFitnes.push(gbest);
+    iteraciones.push(historialBest.length - 1);
+
     if (evals >= maxGenGraph) {
       console.log(historialBest, historialFitnes);
       const data = {
@@ -200,19 +217,6 @@ class Particles {
       });
     }
   }
-
-  initAnimation() {
-    ctx.drawImage(canvasImage, 0, 0);
-    //dibujarFigura(valores, size);
-    for (let i = 0; i < this.puntos; i++) {
-      this.particles[i].display();
-    }
-    this.despliegaBest();
-    for (let i = 0; i < this.puntos; i++) {
-      this.particles[i].eval();
-      this.particles[i].move();
-    }
-  }
 }
 
 const delayFunction = (ms) => {
@@ -228,12 +232,12 @@ const delayFunction = (ms) => {
 };
 
 const mostrar = async () => {
-  while (evals <= maxGenGraph) {
+  while (evals <= maxGenGraph + 1) {
     await delayFunction(1);
     //ctx.clearRect(0, 0, canvas.width, canvas.height);
     ParticlesAlgorithms.initAnimation();
   }
-  if (evals > maxGenGraph) {
+  if (evals > maxGenGraph - 1) {
     ParticlesAlgorithms = [];
     canvas.remove();
   }
