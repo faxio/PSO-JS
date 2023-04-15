@@ -110,7 +110,7 @@ class Particles {
     const evalToBest = document.createElement("h2");
     evalToBest.innerText = "Evals to best: " + evals_to_best;
     const evaluaciones = document.createElement("h2");
-    evaluaciones.innerText = "Evals to best: " + evals;
+    evaluaciones.innerText = "Evals: " + evals;
     while (informacion.firstChild) {
       informacion.removeChild(informacion.firstChild);
     }
