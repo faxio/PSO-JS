@@ -5,10 +5,18 @@ const informacion = document.querySelector(".informacion");
 canvas.width = 512;
 canvas.height = 512;
 
+//Datos para graficar
+const grafica = document.querySelector("#grafica").getContext("2d");
+grafica.display = "none";
+let maxGenGraph = 30000;
+let historialBest = [];
+let historialFitnes = [];
+let iteraciones = [];
+
 //ctx.drawImage(img, 0, 0);
-let mutacion = 0.1;
+let mutacion = 0.01;
 let formulaMutacion = Math.random() * (mutacion + mutacion) - mutacion;
-let puntos = 200;
+let puntos = 100;
 let ParticlesS = []; // arreglo de partículas
 
 circleRadius = 10; // radio del círculo, solo para despliegue
@@ -86,6 +94,7 @@ class Particles {
   constructor(/*gbestx, gbesty, gbest,*/ puntos, canvas) {
     this.evals = 0;
     this.evals_to_best = 0;
+    this.particlesAllFits = 0;
     this.particles = [];
     this.seleccionados = [];
     this.cruzamientos = [];
@@ -138,23 +147,77 @@ class Particles {
     this.seleccion();
     this.cruzamiento();
     this.mutacion();
+    let contador = 1000;
 
     for (let i = 0; i < this.puntos; i++) {
       this.particles[i].eval();
+      this.particlesAllFits += this.particles[i].fit;
+      if (this.particles[i].fit < contador) {
+        console.log(this.particles[i].fit);
+        contador = this.particles[i].fit;
+      }
+    }
+    historialBest.push(this.particlesAllFits / this.particles.length);
+    this.particlesAllFits = 0;
+    historialFitnes.push(contador);
+    iteraciones.push(historialBest.length - 1);
+
+    if (evals >= maxGenGraph) {
+      const data = {
+        labels: iteraciones,
+        datasets: [
+          {
+            label: "Promedio de fit",
+            data: historialBest, // La data es un arreglo que debe tener la misma cantidad de valores que la cantidad de etiquetas
+            backgroundColor: "rgba(54, 162, 235, 0.2)", // Color de fondo
+            borderColor: "rgba(54, 162, 235, 1)", // Color del borde
+            borderWidth: 1, // Ancho del borde
+          },
+          {
+            label: "Best Value fit",
+            data: historialFitnes, // La data es un arreglo que debe tener la misma cantidad de valores que la cantidad de etiquetas
+            backgroundColor: "rgba(255, 159, 64, 0.2)", // Color de fondo
+            borderColor: "rgba(255, 159, 64, 1)", // Color del borde
+            borderWidth: 1, // Ancho del borde
+          },
+        ],
+      };
+
+      new Chart(grafica, {
+        type: "line", // Tipo de gráfica)
+        data: data,
+        options: {
+          scales: {
+            yAxes: [
+              {
+                ticks: {
+                  suggestedMax: 70,
+                  suggestedMin: -20,
+                },
+              },
+            ],
+          },
+        },
+      });
     }
   }
 
   seleccion() {
     this.seleccionados = [];
-    let largo = Math.floor(this.particles.length);
 
+    let largo = Math.floor(this.particles.length);
+    let k = largo / 2;
     for (let i = 0; i < largo; i++) {
       let probabilidadSeleccion1 = Math.floor(Math.random() * largo);
       let probabilidadSeleccion2 = Math.floor(Math.random() * largo);
-      if (
-        this.particles[probabilidadSeleccion1].fit <
-        this.particles[probabilidadSeleccion2].fit
-      ) {
+      let a_comparar = this.particles[probabilidadSeleccion1];
+      for (let z = 1; z < k; z++) {
+        let probabilidadT_k = Math.floor(Math.random() * largo);
+        if (a_comparar.fit > this.particles[probabilidadT_k].fit) {
+          a_comparar = this.particles[probabilidadT_k].fit;
+        }
+      }
+      if (a_comparar < this.particles[probabilidadSeleccion2].fit) {
         this.seleccionados.push(this.particles[probabilidadSeleccion1]);
       } else {
         this.seleccionados.push(this.particles[probabilidadSeleccion2]);
@@ -207,7 +270,7 @@ class Particles {
 
   mutacion() {
     let largo = this.cruzamientos.length;
-    let probabilidadMutacion = 0.2;
+    let probabilidadMutacion = 1;
     this.seleccionados = [];
     for (let i = 0; i < largo; i++) {
       if (this.cruzamientos[i].probabilidadMutacion < probabilidadMutacion) {
@@ -233,10 +296,14 @@ const delayFunction = (ms) => {
 };
 
 const mostrar = async () => {
-  while (true) {
-    await delayFunction(1000);
+  while (evals <= maxGenGraph + 1) {
+    await delayFunction(10);
     //ctx.clearRect(0, 0, canvas.width, canvas.height);
     ParticlesAlgorithms.initAnimation();
+  }
+  if (evals > maxGenGraph - 1) {
+    ParticlesAlgorithms = [];
+    canvas.remove();
   }
 };
 

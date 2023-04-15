@@ -15,7 +15,7 @@ let iteraciones = [];
 // Referencia para gráficas
 const grafica = document.querySelector("#grafica").getContext("2d");
 
-let puntos = 100;
+let puntos = 50;
 let ParticlesS = []; // arreglo de partículas
 
 circleRadius = 10; // radio del círculo, solo para despliegue
@@ -24,12 +24,12 @@ let gbestx = 2500,
   gbest = 2500, // posición y fitness del mejor global
   promedio = 10;
 
-let w = 2000; // inercia: baja (~50): explotación, alta (~5000): exploración (2000 ok)
+let w = 1000; // inercia: baja (~50): explotación, alta (~5000): exploración (2000 ok)
 let C1 = 0.2;
 let C2 = 0.1; // learning factors (C1: own, C2: social) (ok)
 let evals = 0;
 let evals_to_best = 0; //número de evaluaciones, sólo para despliegue
-let maxv = 3; // max velocidad (modulo)
+let maxv = 1; // max velocidad (modulo)
 
 class Particle {
   constructor(canvas) {
@@ -178,15 +178,19 @@ class Particles {
     for (let i = 0; i < this.puntos; i++) {
       this.particles[i].display();
     }
+    let contador = 512;
     this.despliegaBest();
     for (let i = 0; i < this.puntos; i++) {
       this.particles[i].eval();
       this.particles[i].move();
       this.particlesAllFits += this.particles[i].fit;
+      if (this.particles[i].fit < contador) {
+        contador = this.particles[i].fit;
+      }
     }
     historialBest.push(this.particlesAllFits / this.particles.length);
     this.particlesAllFits = 0;
-    historialFitnes.push(gbest);
+    historialFitnes.push(contador);
     iteraciones.push(historialBest.length - 1);
 
     if (evals >= maxGenGraph) {
@@ -214,6 +218,18 @@ class Particles {
       new Chart(grafica, {
         type: "line", // Tipo de gráfica)
         data: data,
+        options: {
+          scales: {
+            yAxes: [
+              {
+                ticks: {
+                  suggestedMax: 70,
+                  suggestedMin: -20,
+                },
+              },
+            ],
+          },
+        },
       });
     }
   }
