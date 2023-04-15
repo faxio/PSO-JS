@@ -16,7 +16,7 @@ let iteraciones = [];
 //ctx.drawImage(img, 0, 0);
 let mutacion = 0.01;
 let formulaMutacion = Math.random() * (mutacion + mutacion) - mutacion;
-let puntos = 100;
+let puntos = 50;
 let ParticlesS = []; // arreglo de partículas
 
 circleRadius = 10; // radio del círculo, solo para despliegue
@@ -149,11 +149,10 @@ class Particles {
     this.mutacion();
     let contador = 1000;
 
-    for (let i = 0; i < this.puntos; i++) {
+    for (let i = 0; i < this.particles.length; i++) {
       this.particles[i].eval();
       this.particlesAllFits += this.particles[i].fit;
       if (this.particles[i].fit < contador) {
-        console.log(this.particles[i].fit);
         contador = this.particles[i].fit;
       }
     }
@@ -270,11 +269,22 @@ class Particles {
 
   mutacion() {
     let largo = this.cruzamientos.length;
-    let probabilidadMutacion = 1;
+    let probabilidadMutacion = 2.9;
     this.seleccionados = [];
     for (let i = 0; i < largo; i++) {
       if (this.cruzamientos[i].probabilidadMutacion < probabilidadMutacion) {
-        this.seleccionados.push(new Particle(canvas));
+        let particle = new Particle(canvas);
+        let movimientox = particle.x / 8;
+        let movimientoy = particle.y / 8;
+        particle.x =
+          this.cruzamientos[i].x +
+          Math.random() * (movimientox + movimientox) -
+          movimientox;
+        particle.y =
+          this.cruzamientos[i].y +
+          Math.random() * (movimientoy + movimientoy) -
+          movimientoy;
+        this.seleccionados.push(particle);
       } else {
         this.seleccionados.push(this.cruzamientos[i]);
       }
