@@ -6,8 +6,6 @@ canvas.width = 512;
 canvas.height = 512;
 
 // Datos para gráficas
-
-let maxGenGraph = 30000;
 let historialBest = [];
 let historialFitnes = [];
 let iteraciones = [];
@@ -15,21 +13,25 @@ let iteraciones = [];
 // Referencia para gráficas
 const grafica = document.querySelector("#grafica").getContext("2d");
 
-let puntos = 50;
-let ParticlesS = []; // arreglo de partículas
+//Parámetros
+let puntos = 70;
+let maxv = 1; // max velocidad (modulo)
+let maxGenGraph = 30000;    
+let w = 2000; // inercia: baja (~50): explotación, alta (~5000): exploración (2000 ok)
 
+///////////////////////////////////////////////////////////////////////
+let ParticlesS = []; // arreglo de partículas
 circleRadius = 10; // radio del círculo, solo para despliegue
+
+// posición y fitness del mejor global
 let gbestx = 2500,
   gbesty = 2500,
-  gbest = 2500, // posición y fitness del mejor global
+  gbest = 2500,
   promedio = 10;
 
-let w = 1000; // inercia: baja (~50): explotación, alta (~5000): exploración (2000 ok)
-let C1 = 0.2;
-let C2 = 0.1; // learning factors (C1: own, C2: social) (ok)
 let evals = 0;
 let evals_to_best = 0; //número de evaluaciones, sólo para despliegue
-let maxv = 1; // max velocidad (modulo)
+
 
 class Particle {
   constructor(canvas) {
@@ -44,13 +46,7 @@ class Particle {
   }
 
   eval() {
-    //recibe imagen que define función de fitness
     evals++;
-    //color c=surf.get(int(x),int(y)); // obtiene color de la imagen en posición (x,y)
-
-    //graficaBest.data.datasets[0] = historialBest;
-    //graficaBest.data.datasets[1] = historialFitnes;
-    //graficaBest.update();
 
     if (this.x < 0) this.x = 0;
     if (this.y < 0) this.y = 0;
@@ -60,8 +56,8 @@ class Particle {
     this.fit = valores[Math.floor(this.x)][Math.floor(this.y)];
 
     if (this.fit < this.pfit) {
+      
       // actualiza local best si es mejor
-
       this.pfit = this.fit;
       this.px = this.x;
       this.py = this.y;
@@ -75,21 +71,9 @@ class Particle {
       gbesty = this.y;
       evals_to_best = evals;
     }
-
-    //return fit; //retorna la componente roja
   }
 
   move() {
-    /*
-    this.vx =
-      this.vx +
-      Math.random() * C1 * (this.px - this.x) +
-      Math.random() * C2 * (gbestx - this.x);
-    this.vy =
-      this.vy +
-      Math.random() * C1 * (this.py - this.y) +
-      Math.random() * C2 * (gbesty - this.y);
-    */
     this.vx =
       w * this.vx +
       Math.random() * (this.px - this.x) +
@@ -146,10 +130,6 @@ class Particles {
     ctx.fill();
     ctx.stroke();
 
-    //PFont f = createFont("Arial",16,true);
-    //textFont(f,15);
-    //fill(#00ff00);
-    //text("Best fitness: "+str(gbest)+"\nEvals to best: "+str(evals_to_best)+"\nEvals: "+str(evals),10,20);
     const title = document.createElement("h2");
     title.innerText = "best fitness: " + gbest;
 
@@ -157,7 +137,7 @@ class Particles {
     evalToBest.innerText = "Evals to best: " + evals_to_best;
 
     const evaluaciones = document.createElement("h2");
-    evaluaciones.innerText = "Evals to best: " + evals;
+    evaluaciones.innerText = "Evals: " + evals;
 
     while (informacion.firstChild) {
       informacion.removeChild(informacion.firstChild);
@@ -174,7 +154,6 @@ class Particles {
 
   initAnimation() {
     ctx.drawImage(canvasImage, 0, 0);
-    //dibujarFigura(valores, size);
     for (let i = 0; i < this.puntos; i++) {
       this.particles[i].display();
     }
@@ -250,7 +229,6 @@ const delayFunction = (ms) => {
 const mostrar = async () => {
   while (evals <= maxGenGraph + 1) {
     await delayFunction(1);
-    //ctx.clearRect(0, 0, canvas.width, canvas.height);
     ParticlesAlgorithms.initAnimation();
   }
   if (evals > maxGenGraph - 1) {
@@ -313,42 +291,10 @@ let cantidadPixeles = 512;
 let dominio = generarDominio(limites, cantidadPixeles);
 let [valores, size] = generarFuncion(dominio);
 let canvasImage = dibujarFigura(valores, size);
-//dibujarTablero(tablero);
+
 
 let ParticlesAlgorithms = new Particles(puntos, canvas, ctx, circleRadius);
 ParticlesAlgorithms.createParticles();
 ParticlesAlgorithms.initAnimation();
 
 mostrar();
-
-/*
-
-function graficar(){
-  let graficaBest = new Chart(grafica, {
-    type: "line", // Tipo de gráfica)
-    data: {
-      datasets: [
-        datosVentas2020,
-        datosVentas2021,
-        // Aquí más datos...
-      ],
-    },
-    options: {
-      scales: {
-        yAxes: [
-          {
-            ticks: {
-              beginAtZero: true,
-            },
-          },
-        ],
-      },
-    },
-  });
-}
-
-function remover(grafica) {
-  grafica.destroy()
-}
-
-*/
